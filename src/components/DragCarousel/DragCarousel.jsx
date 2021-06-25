@@ -24,23 +24,28 @@ const Set = styled.div`
   position: absolute;
   display: flex;
   height: 100%;
+  transform: translate(${props => props.x}, '0');
 `
 
 const DragCarousel = (props) => {
   const { children, height } = props;
   const dragStart = useRef();
+  const setWidth = useRef();
+  const containerRef = useRef();
   const setRefs = useRef([]);
 
-  const [ NextSet, setNextSet ] = useState();
+  const [ AllSets, SetAllSets ] = useState([]);
   const [ Loaded, setLoaded ] = useState(false);
-  const currentSetPosition = useRef();
+  const currentSetPositions = useRef();
 
   useEffect(() => {
     Promise.all(children.map((child) => {
       return preload(child.props.src);
     })).then(() => {
-      console.log(setRefs.current[0].offsetWidth);
       setLoaded(true);
+      SetAllSets(origArray => [...origArray, createSet(children, 0)]);
+      setWidth.current = setRefs.current[0].offsetWidth;
+      console.log(containerRef.current.offsetWidth);
     });
   }, []);
 
@@ -61,15 +66,18 @@ const DragCarousel = (props) => {
 
   const onDragStart = (e) => {
     dragStart.current = e.clientX || e.touches[0].clientX;
-    currentSetPosition.current = getTranslateX(setRefs.current[0]);
+    currentSetPositions.current = setRefs.current.map((ref) => {
+      return getTranslateX(ref);
+    });
   }
 
   const onDrag = (e) => {
     let currentPos = e.clientX || e.touches[0].clientX;
     let diff = currentPos - dragStart.current;
-    setRefs.current[0].style.transform = `translate(${currentSetPosition.current + diff}px,0)`;
-
-    setManager();
+    setRefs.current.forEach((ref,index) => {
+      ref.style.transform = `translate(${currentSetPositions.current[index] + diff}px,0)`;
+    })
+    
   }
 
   const onDragEnd = (e) => {
@@ -77,35 +85,39 @@ const DragCarousel = (props) => {
   }
 
   const preload = (src) => new Promise((resolve, reject) => {
-    const img = new Image()
-    img.onload = resolve
-    img.onerror = reject
-    img.src = src
+    const img = new Image();
+    img.onload = resolve;
+    img.onerror = reject;
+    img.src = src;
   })
+
+  const isEmptySpaceCheck = (diff) => {
+    const start = x;
+    const end = start + setWidth.current;
+    const containerWidth = containerRef.current;
+
+    setRefs.current.forEach((ref,index) => {
+      const newPos = currentSetPositions.current[index] + diff;
+    })
+  }
   
 
-  const createSet = (children, index) => {
+  const createSet = (children, index, x) => {
     return  (
-        <Set ref={el => (setRefs.current[index] = el)}>
+        <Set ref={el => (setRefs.current[index] = el)} x={x || 0}>
           { children ? getItems(children) : null }
         </Set>
       )
   }
-
-  const setManager = () => {
-    console.log('set manager');
-  }
-
-  const MainSet = createSet(children, 0);
 
   return (
     <DraggableCore 
         onStart={onDragStart}
         onDrag={onDrag}
         onStop={onDragEnd}>
-      <Wrapper height={height || 500}>
+      <Wrapper height={height || 500} ref={containerRef}>
         { !Loaded ? <Cover /> : null }
-        { MainSet }
+        { AllSets }
       </Wrapper>
     </DraggableCore>
   )
