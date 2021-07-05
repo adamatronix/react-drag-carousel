@@ -24,7 +24,7 @@ const Set = styled.div`
   position: absolute;
   display: flex;
   height: 100%;
-  transform: translate(${props => props.x}, '0');
+  transform: translate(${props => props.x}px, 0);
 `
 
 const DragCarousel = (props) => {
@@ -45,6 +45,7 @@ const DragCarousel = (props) => {
       setLoaded(true);
       SetAllSets(origArray => [...origArray, createSet(children, 0)]);
       setWidth.current = setRefs.current[0].offsetWidth;
+      //SetAllSets(origArray => [...origArray, createSet(children, 1, 0 - setWidth.current)]);
       console.log(containerRef.current.offsetWidth);
     });
   }, []);
@@ -75,13 +76,64 @@ const DragCarousel = (props) => {
     let currentPos = e.clientX || e.touches[0].clientX;
     let diff = currentPos - dragStart.current;
     setRefs.current.forEach((ref,index) => {
-      ref.style.transform = `translate(${currentSetPositions.current[index] + diff}px,0)`;
+      let pos = currentSetPositions.current[index] + diff;
+      let endPos = pos + setWidth.current; 
+      if(pos > 0) {
+        let needsFiller = false;
+        //console.log(`${index} is past 0`);
+
+        if(currentSetPositions.current.length > 1) {
+          needsFiller = currentSetPositions.current.every((position,i)=>{
+              return (pos - setWidth.current) !== position + diff;
+          });
+          console.log(needsFiller);
+        } else {
+          console.log('first trigger');
+          needsFiller = true;
+          
+        }
+
+        if(needsFiller) {
+          console.log('add Shit');
+          SetAllSets(origArray => [...origArray, createSet(children, index+1, pos - setWidth.current)]);
+          
+        }
+        
+      }
+
+      if(endPos < containerRef.current.offsetWidth ) {
+        //console.log('possible right blank');
+        let needsFiller = false;
+        //console.log(`${index} is past 0`);
+
+        if(currentSetPositions.current.length > 1) {
+          needsFiller = currentSetPositions.current.every((position,i)=>{
+              return endPos !== (position + diff);
+          });
+          console.log(needsFiller);
+        } else {
+          console.log('first trigger');
+          needsFiller = true;
+          
+        }
+
+        if(needsFiller) {
+          console.log('add Shit');
+          SetAllSets(origArray => [...origArray, createSet(children, index+1, endPos)]);
+          
+        }
+      }
+      ref.style.transform = `translate(${pos}px,0)`;
     })
+
+    dragStart.current = e.clientX || e.touches[0].clientX;
+    currentSetPositions.current = setRefs.current.map((ref) => {
+      return getTranslateX(ref);
+    });
     
   }
 
   const onDragEnd = (e) => {
-    console.log('end');
   }
 
   const preload = (src) => new Promise((resolve, reject) => {
@@ -91,7 +143,7 @@ const DragCarousel = (props) => {
     img.src = src;
   })
 
-  const isEmptySpaceCheck = (diff) => {
+  /*const isEmptySpaceCheck = (diff) => {
     const start = x;
     const end = start + setWidth.current;
     const containerWidth = containerRef.current;
@@ -99,7 +151,7 @@ const DragCarousel = (props) => {
     setRefs.current.forEach((ref,index) => {
       const newPos = currentSetPositions.current[index] + diff;
     })
-  }
+  }*/
   
 
   const createSet = (children, index, x) => {
