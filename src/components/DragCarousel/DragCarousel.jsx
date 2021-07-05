@@ -43,7 +43,7 @@ const DragCarousel = (props) => {
       return preload(child.props.src);
     })).then(() => {
       setLoaded(true);
-      SetAllSets(origArray => [...origArray, createSet(children, 0)]);
+      SetAllSets(origArray => [...origArray, createSet(children)]);
       setWidth.current = setRefs.current[0].offsetWidth;
       //SetAllSets(origArray => [...origArray, createSet(children, 1, 0 - setWidth.current)]);
       console.log(containerRef.current.offsetWidth);
@@ -95,7 +95,7 @@ const DragCarousel = (props) => {
 
         if(needsFiller) {
           console.log('add Shit');
-          SetAllSets(origArray => [...origArray, createSet(children, index+1, pos - setWidth.current)]);
+          SetAllSets(origArray => [...origArray, createSet(children, pos - setWidth.current)]);
           
         }
         
@@ -119,7 +119,7 @@ const DragCarousel = (props) => {
 
         if(needsFiller) {
           console.log('add Shit');
-          SetAllSets(origArray => [...origArray, createSet(children, index+1, endPos)]);
+          SetAllSets(origArray => [...origArray, createSet(children, endPos)]);
           
         }
       }
@@ -154,9 +154,9 @@ const DragCarousel = (props) => {
   }*/
   
 
-  const createSet = (children, index, x) => {
+  const createSet = (children, x) => {
     return  (
-        <Set ref={el => (setRefs.current[index] = el)} x={x || 0}>
+        <Set ref={el => setRefs.current.push(el)} x={x || 0}>
           { children ? getItems(children) : null }
         </Set>
       )
