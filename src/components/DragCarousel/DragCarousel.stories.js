@@ -22,7 +22,7 @@ export const Default = () => {
           )
       })} 
       </DragCarousel>
-      <DragCarousel auto>
+      <DragCarousel direction={-1} auto>
         <img src={brands}  style={{pointerEvents: 'none', display: 'block', height: '100px'}} />
         <img src={brands}  style={{pointerEvents: 'none', display: 'block', height: '100px'}} />
       </DragCarousel>
