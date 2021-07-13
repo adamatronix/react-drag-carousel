@@ -28,11 +28,18 @@ const Set = styled.div`
 `
 
 const DragCarousel = (props) => {
-  const { children, height } = props;
+  const { children, height, auto} = props;
   const dragStart = useRef();
   const setWidth = useRef();
   const containerRef = useRef();
   const setRefs = useRef([]);
+  const animatePos = useRef(0);
+  const pauseAnimation = useRef(false);
+  const autoDirection = useRef(1);
+  const difference = useRef(0);
+  const time = useRef(Date.now());
+  const storedCoords = useRef({x: null, y: null});
+  const velocity = useRef(null);
 
   const [ AllSets, SetAllSets ] = useState([]);
   const [ Loaded, setLoaded ] = useState(false);
@@ -46,7 +53,12 @@ const DragCarousel = (props) => {
       SetAllSets(origArray => [...origArray, createSet(children)]);
       setWidth.current = setRefs.current[0].offsetWidth;
       //SetAllSets(origArray => [...origArray, createSet(children, 1, 0 - setWidth.current)]);
-      console.log(containerRef.current.offsetWidth);
+
+      if(auto) {
+        onAnimationStart(0);
+        startAnimation();
+      }
+      
     });
   }, []);
 
@@ -66,15 +78,80 @@ const DragCarousel = (props) => {
   }
 
   const onDragStart = (e) => {
-    dragStart.current = e.clientX || e.touches[0].clientX;
+    pauseAnimation.current = true;
+    onAnimationStart(e.clientX || e.touches[0].clientX);
+    
+  }
+
+  const onDrag = (e) => {
+    let current = {
+      x: e.clientX || e.touches[0].clientX,
+      y: e.clientY || e.touches[0].clientY
+    }
+
+    let dy = current.x - storedCoords.current.x;
+    let dx = current.y - storedCoords.current.y;
+
+    storedCoords.current.x = e.clientX || e.touches[0].clientX;
+    storedCoords.current.y = e.clientY || e.touches[0].clientY;
+
+    velocity.current = calculateVelocity(dx,dy);
+    velocity.current.v += 50;
+    
+    animate(e.clientX || e.touches[0].clientX);
+  }
+
+  const onDragEnd = (e) => {
+    pauseAnimation.current = false;
+
+    if(difference.current >= 0) {
+      autoDirection.current = 1;
+    } else {
+      autoDirection.current = -1;
+    }
+
+    if(auto) {
+      animatePos.current = 0;
+      onAnimationStart(0);
+      startAnimation();
+    }
+  }
+
+  const startAnimation = () => {
+    
+    if(!pauseAnimation.current) {
+      animate(animatePos.current);
+      
+      let normalizedV = velocity.current ? Math.round(velocity.current.v) : 1;
+
+      if(normalizedV > 1) {
+          velocity.current.v *= 0.9;
+      } else {
+          normalizedV = 1;
+      }
+  
+      if(autoDirection.current > 0) {
+        animatePos.current += normalizedV;
+      } else {
+        animatePos.current -= normalizedV;
+      }
+    
+    window.requestAnimationFrame(startAnimation);
+    }
+  }
+
+  const onAnimationStart = (x) => {
+    dragStart.current = x;
     currentSetPositions.current = setRefs.current.map((ref) => {
       return getTranslateX(ref);
     });
   }
 
-  const onDrag = (e) => {
-    let currentPos = e.clientX || e.touches[0].clientX;
+  const animate = (x) => {
+
+    let currentPos = x;
     let diff = currentPos - dragStart.current;
+    difference.current = diff;
     setRefs.current.forEach((ref,index) => {
       let pos = currentSetPositions.current[index] + diff;
       let endPos = pos + setWidth.current; 
@@ -86,15 +163,12 @@ const DragCarousel = (props) => {
           needsFiller = currentSetPositions.current.every((position,i)=>{
               return (pos - setWidth.current) !== position + diff;
           });
-          console.log(needsFiller);
         } else {
-          console.log('first trigger');
           needsFiller = true;
           
         }
 
         if(needsFiller) {
-          console.log('add Shit');
           SetAllSets(origArray => [...origArray, createSet(children, pos - setWidth.current)]);
           
         }
@@ -110,15 +184,12 @@ const DragCarousel = (props) => {
           needsFiller = currentSetPositions.current.every((position,i)=>{
               return endPos !== (position + diff);
           });
-          console.log(needsFiller);
         } else {
-          console.log('first trigger');
           needsFiller = true;
           
         }
 
         if(needsFiller) {
-          console.log('add Shit');
           SetAllSets(origArray => [...origArray, createSet(children, endPos)]);
           
         }
@@ -126,14 +197,23 @@ const DragCarousel = (props) => {
       ref.style.transform = `translate(${pos}px,0)`;
     })
 
-    dragStart.current = e.clientX || e.touches[0].clientX;
+    dragStart.current = currentPos;
     currentSetPositions.current = setRefs.current.map((ref) => {
       return getTranslateX(ref);
     });
-    
+
   }
 
-  const onDragEnd = (e) => {
+  const calculateVelocity = (dx,dy) => {
+    let newTime = Date.now();  
+    let interval = newTime - time.current;
+    let velocity = {
+        v: Math.sqrt(dx*dx+dy*dy)/interval,
+        x: dx / interval,
+        y: dy / interval
+    } 
+    time.current = newTime;
+    return velocity;
   }
 
   const preload = (src) => new Promise((resolve, reject) => {

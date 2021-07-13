@@ -14,7 +14,7 @@ export const Default = () => {
   
   return (
     <>
-      <DragCarousel>
+      <DragCarousel auto>
       { imageArray.map((item, index) => {
         const image = generatePhotoPlaceholderURL(600, 600);
           return (
