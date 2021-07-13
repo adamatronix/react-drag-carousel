@@ -37,6 +37,9 @@ const DragCarousel = (props) => {
   const pauseAnimation = useRef(false);
   const autoDirection = useRef(1);
   const difference = useRef(0);
+  const time = useRef(Date.now());
+  const storedCoords = useRef({x: null, y: null});
+  const velocity = useRef(null);
 
   const [ AllSets, SetAllSets ] = useState([]);
   const [ Loaded, setLoaded ] = useState(false);
@@ -81,6 +84,20 @@ const DragCarousel = (props) => {
   }
 
   const onDrag = (e) => {
+    let current = {
+      x: e.clientX || e.touches[0].clientX,
+      y: e.clientY || e.touches[0].clientY
+    }
+
+    let dy = current.x - storedCoords.current.x;
+    let dx = current.y - storedCoords.current.y;
+
+    storedCoords.current.x = e.clientX || e.touches[0].clientX;
+    storedCoords.current.y = e.clientY || e.touches[0].clientY;
+
+    velocity.current = calculateVelocity(dx,dy);
+    velocity.current.v += 50;
+    
     animate(e.clientX || e.touches[0].clientX);
   }
 
@@ -104,14 +121,20 @@ const DragCarousel = (props) => {
     
     if(!pauseAnimation.current) {
       animate(animatePos.current);
-
-      if(autoDirection.current > 0) {
-        animatePos.current++;
-      } else {
-        animatePos.current--;
-      }
       
-    
+      let normalizedV = velocity.current ? Math.round(velocity.current.v) : 1;
+
+      if(normalizedV > 1) {
+          velocity.current.v *= 0.9;
+      } else {
+          normalizedV = 1;
+      }
+  
+      if(autoDirection.current > 0) {
+        animatePos.current += normalizedV;
+      } else {
+        animatePos.current -= normalizedV;
+      }
     
     window.requestAnimationFrame(startAnimation);
     }
@@ -179,6 +202,18 @@ const DragCarousel = (props) => {
       return getTranslateX(ref);
     });
 
+  }
+
+  const calculateVelocity = (dx,dy) => {
+    let newTime = Date.now();  
+    let interval = newTime - time.current;
+    let velocity = {
+        v: Math.sqrt(dx*dx+dy*dy)/interval,
+        x: dx / interval,
+        y: dy / interval
+    } 
+    time.current = newTime;
+    return velocity;
   }
 
   const preload = (src) => new Promise((resolve, reject) => {
