@@ -66,14 +66,27 @@ const DragCarousel = (props) => {
   }
 
   const onDragStart = (e) => {
-    dragStart.current = e.clientX || e.touches[0].clientX;
+    onAnimationStart(e.clientX || e.touches[0].clientX);
+    
+  }
+
+  const onDrag = (e) => {
+    animate(e.clientX || e.touches[0].clientX);
+  }
+
+  const onDragEnd = (e) => {
+  }
+
+  const onAnimationStart = (x) => {
+    dragStart.current = x;
     currentSetPositions.current = setRefs.current.map((ref) => {
       return getTranslateX(ref);
     });
   }
 
-  const onDrag = (e) => {
-    let currentPos = e.clientX || e.touches[0].clientX;
+  const animate = (x) => {
+
+    let currentPos = x;
     let diff = currentPos - dragStart.current;
     setRefs.current.forEach((ref,index) => {
       let pos = currentSetPositions.current[index] + diff;
@@ -126,14 +139,11 @@ const DragCarousel = (props) => {
       ref.style.transform = `translate(${pos}px,0)`;
     })
 
-    dragStart.current = e.clientX || e.touches[0].clientX;
+    dragStart.current = currentPos;
     currentSetPositions.current = setRefs.current.map((ref) => {
       return getTranslateX(ref);
     });
-    
-  }
 
-  const onDragEnd = (e) => {
   }
 
   const preload = (src) => new Promise((resolve, reject) => {
