@@ -28,11 +28,13 @@ const Set = styled.div`
 `
 
 const DragCarousel = (props) => {
-  const { children, height } = props;
+  const { children, height, auto} = props;
   const dragStart = useRef();
   const setWidth = useRef();
   const containerRef = useRef();
   const setRefs = useRef([]);
+  const animatePos = useRef(0);
+  const pauseAnimation = useRef(false);
 
   const [ AllSets, SetAllSets ] = useState([]);
   const [ Loaded, setLoaded ] = useState(false);
@@ -46,7 +48,12 @@ const DragCarousel = (props) => {
       SetAllSets(origArray => [...origArray, createSet(children)]);
       setWidth.current = setRefs.current[0].offsetWidth;
       //SetAllSets(origArray => [...origArray, createSet(children, 1, 0 - setWidth.current)]);
-      console.log(containerRef.current.offsetWidth);
+
+      if(auto) {
+        onAnimationStart(0);
+        startAnimation();
+      }
+      
     });
   }, []);
 
@@ -66,6 +73,7 @@ const DragCarousel = (props) => {
   }
 
   const onDragStart = (e) => {
+    pauseAnimation.current = true;
     onAnimationStart(e.clientX || e.touches[0].clientX);
     
   }
@@ -75,6 +83,23 @@ const DragCarousel = (props) => {
   }
 
   const onDragEnd = (e) => {
+    pauseAnimation.current = false;
+    if(auto) {
+      animatePos.current = 0;
+      onAnimationStart(0);
+      startAnimation();
+    }
+  }
+
+  const startAnimation = () => {
+    
+    if(!pauseAnimation.current) {
+      animate(animatePos.current);
+      animatePos.current++;
+    
+    
+    window.requestAnimationFrame(startAnimation);
+    }
   }
 
   const onAnimationStart = (x) => {
