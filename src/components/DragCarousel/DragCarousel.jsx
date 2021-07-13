@@ -35,6 +35,8 @@ const DragCarousel = (props) => {
   const setRefs = useRef([]);
   const animatePos = useRef(0);
   const pauseAnimation = useRef(false);
+  const autoDirection = useRef(1);
+  const difference = useRef(0);
 
   const [ AllSets, SetAllSets ] = useState([]);
   const [ Loaded, setLoaded ] = useState(false);
@@ -84,6 +86,13 @@ const DragCarousel = (props) => {
 
   const onDragEnd = (e) => {
     pauseAnimation.current = false;
+
+    if(difference.current >= 0) {
+      autoDirection.current = 1;
+    } else {
+      autoDirection.current = -1;
+    }
+
     if(auto) {
       animatePos.current = 0;
       onAnimationStart(0);
@@ -95,7 +104,13 @@ const DragCarousel = (props) => {
     
     if(!pauseAnimation.current) {
       animate(animatePos.current);
-      animatePos.current++;
+
+      if(autoDirection.current > 0) {
+        animatePos.current++;
+      } else {
+        animatePos.current--;
+      }
+      
     
     
     window.requestAnimationFrame(startAnimation);
@@ -113,6 +128,7 @@ const DragCarousel = (props) => {
 
     let currentPos = x;
     let diff = currentPos - dragStart.current;
+    difference.current = diff;
     setRefs.current.forEach((ref,index) => {
       let pos = currentSetPositions.current[index] + diff;
       let endPos = pos + setWidth.current; 
@@ -124,15 +140,12 @@ const DragCarousel = (props) => {
           needsFiller = currentSetPositions.current.every((position,i)=>{
               return (pos - setWidth.current) !== position + diff;
           });
-          console.log(needsFiller);
         } else {
-          console.log('first trigger');
           needsFiller = true;
           
         }
 
         if(needsFiller) {
-          console.log('add Shit');
           SetAllSets(origArray => [...origArray, createSet(children, pos - setWidth.current)]);
           
         }
@@ -148,15 +161,12 @@ const DragCarousel = (props) => {
           needsFiller = currentSetPositions.current.every((position,i)=>{
               return endPos !== (position + diff);
           });
-          console.log(needsFiller);
         } else {
-          console.log('first trigger');
           needsFiller = true;
           
         }
 
         if(needsFiller) {
-          console.log('add Shit');
           SetAllSets(origArray => [...origArray, createSet(children, endPos)]);
           
         }
