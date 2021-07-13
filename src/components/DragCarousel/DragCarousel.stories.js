@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import DragCarousel from './DragCarousel';
 import { generatePhotoPlaceholderURL } from 'react-placeholder-image';
-
+import brands from './assets/BIT_OD_Header_DT_Logo_2.jpg';
 
 export default {
   title: 'DragCarousel',
@@ -20,7 +20,11 @@ export const Default = () => {
           return (
               <img src={image}  style={{pointerEvents: 'none', display: 'block', height: '100%'}} />
           )
-      })}
+      })} 
+      </DragCarousel>
+      <DragCarousel auto>
+        <img src={brands}  style={{pointerEvents: 'none', display: 'block', height: '100px'}} />
+        <img src={brands}  style={{pointerEvents: 'none', display: 'block', height: '100px'}} />
       </DragCarousel>
     </>
   );
