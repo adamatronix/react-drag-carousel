@@ -28,14 +28,14 @@ const Set = styled.div`
 `
 
 const DragCarousel = (props) => {
-  const { children, height, auto} = props;
+  const { children, height, auto, direction} = props;
   const dragStart = useRef();
   const setWidth = useRef();
   const containerRef = useRef();
   const setRefs = useRef([]);
   const animatePos = useRef(0);
   const pauseAnimation = useRef(false);
-  const autoDirection = useRef(1);
+  const autoDirection = useRef(direction || 1);
   const difference = useRef(0);
   const time = useRef(Date.now());
   const storedCoords = useRef({x: null, y: null});
