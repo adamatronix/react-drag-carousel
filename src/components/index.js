@@ -1,9 +1,6 @@
-// components/index.js
 
-/*
-import Button from './Button';
+import DragCarousel from './DragCarousel/DragCarousel';
 
 export { 
-    Button
+    DragCarousel
 };
-*/
