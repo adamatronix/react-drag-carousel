@@ -1,5 +1,5 @@
 {
-  "name": "react-npm-boilerplate",
+  "name": "@adamatronix/react-drag-carousel",
   "version": "0.1.0",
   "main": "dist/index.js",
   "private": false,
@@ -9,7 +9,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "URL_OF_YOUR_REPOSITORY"
+    "url": "https://github.com/adamatronix/react-drag-carousel"
   },
   "dependencies": {
     "@testing-library/jest-dom": "^5.12.0",
