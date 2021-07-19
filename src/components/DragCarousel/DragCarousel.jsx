@@ -79,26 +79,27 @@ const DragCarousel = (props) => {
 
   const onDragStart = (e) => {
     pauseAnimation.current = true;
-    onAnimationStart(e.clientX || e.touches[0].clientX);
+    onAnimationStart(e.clientX || Math.floor(e.touches[0].clientX));
     
   }
 
   const onDrag = (e) => {
+    
     let current = {
-      x: e.clientX || e.touches[0].clientX,
-      y: e.clientY || e.touches[0].clientY
+      x: e.clientX || Math.floor(e.touches[0].clientX),
+      y: e.clientY || Math.floor(e.touches[0].clientY)
     }
-
+    
     let dy = current.x - storedCoords.current.x;
     let dx = current.y - storedCoords.current.y;
 
-    storedCoords.current.x = e.clientX || e.touches[0].clientX;
-    storedCoords.current.y = e.clientY || e.touches[0].clientY;
+    storedCoords.current.x = e.clientX || Math.floor(e.touches[0].clientX);
+    storedCoords.current.y = e.clientY || Math.floor(e.touches[0].clientY);
 
     velocity.current = calculateVelocity(dx,dy);
     velocity.current.v += 50;
     
-    animate(e.clientX || e.touches[0].clientX);
+    animate(e.clientX || Math.floor(e.touches[0].clientX));
   }
 
   const onDragEnd = (e) => {
