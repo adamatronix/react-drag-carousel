@@ -8,6 +8,7 @@ const Wrapper = styled.div`
   overflow: hidden;
   cursor: grab;
   height: ${props => props.height}px;
+  width: 100%;
 `
 
 const Cover = styled.div`
@@ -28,7 +29,7 @@ const Set = styled.div`
 `
 
 const DragCarousel = (props) => {
-  const { children, height, auto, direction} = props;
+  const { children, height, auto, drag, direction} = props;
   const dragStart = useRef();
   const setWidth = useRef();
   const containerRef = useRef();
@@ -244,15 +245,22 @@ const DragCarousel = (props) => {
   }
 
   return (
-    <DraggableCore 
-        onStart={onDragStart}
-        onDrag={onDrag}
-        onStop={onDragEnd}>
-      <Wrapper height={height || 500} ref={containerRef}>
-        { !Loaded ? <Cover /> : null }
-        { AllSets }
-      </Wrapper>
-    </DraggableCore>
+    <>  
+      {drag ? 
+      <DraggableCore 
+      onStart={onDragStart}
+      onDrag={onDrag}
+      onStop={onDragEnd}
+      axis='x'>
+        <Wrapper height={height || 500} ref={containerRef}>
+          { !Loaded ? <Cover /> : null }
+          { AllSets }
+        </Wrapper>
+      </DraggableCore> : <Wrapper height={height || 500} ref={containerRef}>
+          { !Loaded ? <Cover /> : null }
+          { AllSets }
+        </Wrapper>}
+    </>
   )
 }
 
@@ -261,8 +269,7 @@ export default DragCarousel;
 
 const ItemWrapper = styled.div`
   width: auto;
-  height: auto;
-  flex-shrink: 0;
+  height: 100%;
   user-select: none;
 `
 const DragCarouselItem = (props) => {
